@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: macos-15
@@ -46,3 +49,12 @@ jobs:
         with:
           name: BLERadar-unsigned-ipa
           path: BLERadar-unsigned.ipa
+
+      - name: Publish Release (stable public link for phone download / QR)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0
+          name: BLE Radar 333
+          body: "Unsigned .ipa of the BLE Radar iOS app. Install with AltStore / SideStore (free Apple ID)."
+          files: BLERadar-unsigned.ipa
+          make_latest: true
