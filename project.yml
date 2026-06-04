@@ -1,0 +1,26 @@
+name: BLERadar
+options:
+  bundleIdPrefix: com.jarvis333
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  BLERadar:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: BLE Radar 333
+        NSBluetoothAlwaysUsageDescription: "BLE Radar scans nearby Bluetooth Low Energy devices to plot them on the radar by signal strength."
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jarvis333.bleradar
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
