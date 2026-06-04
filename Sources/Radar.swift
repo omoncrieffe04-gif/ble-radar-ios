@@ -1,12 +1,17 @@
 import SwiftUI
+import CoreGraphics
+
+// CGFloat-typed trig wrappers — avoids the CGFloat/Double "ambiguous use of cos" overload clash
+@inline(__always) func ccos(_ x: CGFloat) -> CGFloat { CoreGraphics.cos(x) }
+@inline(__always) func csin(_ x: CGFloat) -> CGFloat { CoreGraphics.sin(x) }
 
 // ---- shared geometry so draw + tap hit-test agree ----
 func radarRadius(_ size: CGSize) -> CGFloat { min(size.width, size.height) / 2 - 30 }
 
-func blipAngle(_ id: UUID) -> Double {
+func blipAngle(_ id: UUID) -> CGFloat {
     var h: UInt64 = 1469598103934665603
     for b in id.uuidString.utf8 { h = (h ^ UInt64(b)) &* 1099511628211 }
-    return Double(h % 3600) / 3600.0 * 2 * .pi
+    return CGFloat(h % 3600) / 3600.0 * 2 * .pi
 }
 
 func blipRadius(_ rssi: Int, _ R: CGFloat) -> CGFloat {
@@ -19,7 +24,7 @@ func blipPoint(_ d: BLEDevice, _ size: CGSize) -> CGPoint {
     let R = radarRadius(size)
     let a = blipAngle(d.id)
     let r = blipRadius(d.rssi, R)
-    return CGPoint(x: size.width / 2 + cos(a) * r, y: size.height / 2 + sin(a) * r)
+    return CGPoint(x: size.width / 2 + ccos(a) * r, y: size.height / 2 + csin(a) * r)
 }
 
 func vendorColor(_ v: String) -> Color {
@@ -69,19 +74,19 @@ struct RadarCanvas: View {
                                  at: CGPoint(x: cx + 14, y: cy - rr + 8))
                     }
                     // sweep
-                    let sweep = (t * 1.1).truncatingRemainder(dividingBy: 2 * .pi)
+                    let sweep = CGFloat((t * 1.1).truncatingRemainder(dividingBy: 2 * .pi))
                     var wedge = Path()
                     wedge.move(to: CGPoint(x: cx, y: cy))
                     wedge.addArc(center: CGPoint(x: cx, y: cy), radius: R,
-                                 startAngle: .radians(sweep - 0.5), endAngle: .radians(sweep), clockwise: false)
+                                 startAngle: .radians(Double(sweep) - 0.5), endAngle: .radians(Double(sweep)), clockwise: false)
                     ctx.fill(wedge, with: .radialGradient(Gradient(colors: [lav.opacity(0.28), .clear]),
                              center: CGPoint(x: cx, y: cy), startRadius: 0, endRadius: R))
                     var line = Path()
                     line.move(to: CGPoint(x: cx, y: cy))
-                    line.addLine(to: CGPoint(x: cx + cos(sweep) * R, y: cy + sin(sweep) * R))
+                    line.addLine(to: CGPoint(x: cx + ccos(sweep) * R, y: cy + csin(sweep) * R))
                     ctx.stroke(line, with: .color(lav.opacity(0.55)))
                     // centre = YOU
-                    let pr = 6 + 3 * sin(t * 3)
+                    let pr = 6 + 3 * csin(CGFloat(t) * 3)
                     ctx.stroke(Path(ellipseIn: CGRect(x: cx - pr, y: cy - pr, width: pr * 2, height: pr * 2)),
                                with: .color(lav.opacity(0.5)))
                     ctx.fill(Path(ellipseIn: CGRect(x: cx - 4, y: cy - 4, width: 8, height: 8)), with: .color(lav))
